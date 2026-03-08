@@ -1,0 +1,95 @@
+project:
+  name: psnn_ppg_detection
+  seed: 42
+
+paths:
+  drive_root: /content/drive/MyDrive/psnn_project
+  raw_segments: /content/drive/MyDrive/psnn_project/data/raw_segments
+  features: /content/drive/MyDrive/psnn_project/data/features
+  reservoir_states: /content/drive/MyDrive/psnn_project/data/reservoir_states
+  spike_trains: /content/drive/MyDrive/psnn_project/data/spike_trains
+  checkpoints: /content/drive/MyDrive/psnn_project/models/checkpoints
+  results: /content/drive/MyDrive/psnn_project/results
+
+data:
+  sampling_rate: 125
+  window_duration: 30
+  window_samples: 3750
+  min_record_duration: 300
+  classes:
+    0: Normal
+    1: AF
+    2: Bradycardia
+    3: Tachycardia
+    4: PVC
+  split:
+    train: 1680
+    val: 240
+    test: 480
+
+signal_processing:
+  bandpass_low: 0.5
+  bandpass_high: 8.0
+  filter_order: 4
+  sqi_threshold: 0.5
+  sqi_weights:
+    perfusion: 0.20
+    regularity: 0.15
+    clipping: 0.25
+    spectral: 0.20
+    snr: 0.20
+  peak_min_distance: 50
+  peak_prominence_ratio: 0.30
+
+reservoir:
+  n_nodes: 200
+  wavelength: 1.55e-6
+  ring_radius: 5.0e-6
+  n_eff: 2.4
+  n_g: 4.2
+  loss_db_per_cm: 2.5
+  coupling_angle: 0.32
+  sigma_fab: 0.1
+  mask_interval: 8
+  batch_size: 200
+
+spike_encoding:
+  temporal_downsample: 31
+  n_timesteps: 120
+  alpha_threshold: 1.0
+  ewm_time_constant: 4
+  refractory_period: 2
+  target_sparsity_low: 0.05
+  target_sparsity_high: 0.15
+
+snn:
+  input_size: 200
+  layer1_size: 512
+  layer2_size: 256
+  layer3_size: 128
+  output_size: 5
+  beta_layer1: 0.90
+  beta_layer2: 0.90
+  beta_layer3: 0.85
+  threshold_adapt_step: 0.1
+  threshold_adapt_tau: 10
+
+training:
+  batch_size: 32
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-5
+  max_epochs: 100
+  early_stopping_patience: 20
+  lr_scheduler_patience: 10
+  lr_scheduler_factor: 0.5
+  surrogate: fast_sigmoid
+
+evaluation:
+  bootstrap_n: 1000
+  bootstrap_ci: 0.95
+  min_af_sensitivity: 0.90
+
+ptbxl:
+  sampling_rate: 500
+  resample_to: 125
+  lead: MLII
